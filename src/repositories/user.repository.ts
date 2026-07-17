@@ -1,0 +1,39 @@
+import { prisma } from "../config/prisma";
+import { Prisma } from "@prisma/client";
+
+// Repository layer: the ONLY place that talks to Prisma for Users. Services
+// depend on this interface, not on Prisma directly — makes it trivial to
+// swap ORMs, add caching, or mock in unit tests.
+export const userRepository = {
+  findByEmail(email: string) {
+    return prisma.user.findUnique({ where: { email } });
+  },
+
+  findById(id: string) {
+    return prisma.user.findUnique({ where: { id } });
+  },
+
+  create(data: Prisma.UserCreateInput) {
+    return prisma.user.create({ data });
+  },
+
+  // Excludes passwordHash from the returned object — used for anything
+  // that goes back to the client (profile, JWT payload construction, etc).
+  toPublicUser(user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    role: string;
+    createdAt: Date;
+  }) {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      createdAt: user.createdAt,
+    };
+  },
+};
