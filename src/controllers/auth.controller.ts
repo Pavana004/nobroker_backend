@@ -13,7 +13,7 @@ import { success } from "../utils/apiResponse";
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isProd,
-  sameSite: "none" as const,
+  sameSite: "lax" as const,
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
