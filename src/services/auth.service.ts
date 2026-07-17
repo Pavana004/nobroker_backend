@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { env } from "../config/env";
 import { AppError } from "../utils/AppError";
 import { userRepository } from "../repositories/user.repository";
@@ -17,7 +17,26 @@ interface DeviceContext {
   ipAddress?: string;
 }
 
-async function issueTokenPair(user: { id: string; role: string }, ctx: DeviceContext) {
+async function hashPassword(password: string) {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derived = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `$scrypt$${salt}$${derived}`;
+}
+
+async function verifyPassword(password: string, storedHash: string) {
+  if (!storedHash.startsWith("$scrypt$")) {
+    return false;
+  }
+
+  const [, salt, derived] = storedHash.split("$");
+  const candidate = crypto.scryptSync(password, salt, 64).toString("hex");
+  return candidate === derived;
+}
+
+async function issueTokenPair(
+  user: { id: string; role: string },
+  ctx: DeviceContext,
+) {
   const accessToken = signAccessToken({ sub: user.id, role: user.role });
   const refreshToken = signRefreshToken({ sub: user.id, role: user.role });
 
@@ -39,7 +58,7 @@ export const authService = {
       throw AppError.conflict("An account with this email already exists");
     }
 
-    const passwordHash = await bcrypt.hash(input.password, env.BCRYPT_SALT_ROUNDS);
+    const passwordHash = await hashPassword(input.password);
 
     const user = await userRepository.create({
       name: input.name,
@@ -61,7 +80,7 @@ export const authService = {
       throw AppError.unauthorized("Invalid email or password");
     }
 
-    const isValid = await bcrypt.compare(input.password, user.passwordHash);
+    const isValid = await verifyPassword(input.password, user.passwordHash);
     if (!isValid) {
       throw AppError.unauthorized("Invalid email or password");
     }
@@ -102,7 +121,9 @@ export const authService = {
     }
 
     if (stored.expiresAt < new Date()) {
-      throw AppError.unauthorized("Refresh token expired. Please log in again.");
+      throw AppError.unauthorized(
+        "Refresh token expired. Please log in again.",
+      );
     }
 
     const user = await userRepository.findById(payload.sub);
