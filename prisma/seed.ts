@@ -70,7 +70,7 @@ async function main() {
 
   // Bulk-create 200 sample properties (bump the loop count for a heavier
   // local dataset to test pagination/search performance against).
-  const BATCH_SIZE = 200;
+  const BATCH_SIZE = 100;
   for (let i = 0; i < BATCH_SIZE; i++) {
     const { city, localities } = randomFrom(CITIES);
     const bedrooms = 1 + Math.floor(Math.random() * 5);
