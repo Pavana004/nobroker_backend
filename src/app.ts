@@ -24,7 +24,7 @@ app.use(helmet());
 // (wildcard "*" is rejected by browsers whenever credentials are involved).
 app.use(
   cors({
-    origin: [env.CLIENT_URL, "https://nobroker-backend-sttk.onrender.com/"],
+    origin: [env.CLIENT_URL, "https://nobroker-frontend.vercel.app/"],
     credentials: true,
   }),
 );
