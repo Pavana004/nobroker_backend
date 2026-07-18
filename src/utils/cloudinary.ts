@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { AppError } from "./AppError";
 import { env } from "../config/env";
 
