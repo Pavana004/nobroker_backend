@@ -18,6 +18,14 @@ const app = express();
 // a conservative Content-Security-Policy, and more, in one call.
 app.use(helmet());
 
+
+
+const allowedOrigins = [
+  env.CLIENT_URL,
+  "https://nobroker-frontend.vercel.app",
+  "http://localhost:3000",
+].filter(Boolean);
+
 // --- CORS ---------------------------------------------------------------
 // `credentials: true` is required because the refresh token travels as an
 // httpOnly cookie — the frontend origin must be explicitly whitelisted
@@ -48,12 +56,12 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-
 // --- Body parsing & compression -----------------------------------------
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compression());
+app.enable('trust proxy');
 
 // --- Logging --------------------------------------------------------------
 app.use(morgan(isProd ? "combined" : "dev"));

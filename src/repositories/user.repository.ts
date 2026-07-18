@@ -5,8 +5,19 @@ import { Prisma } from "@prisma/client";
 // depend on this interface, not on Prisma directly — makes it trivial to
 // swap ORMs, add caching, or mock in unit tests.
 export const userRepository = {
-  findByEmail(email: string) {
-    return prisma.user.findUnique({ where: { email } });
+   async findByEmail (email: string) {
+     const normalizedEmail = email.trim().toLowerCase();
+
+   const user = await prisma.user.findUnique({
+  where: {
+    email: normalizedEmail,
+  },
+});
+
+console.log("Email:", normalizedEmail);
+console.log("User found:", !!user);
+
+    return user;
   },
 
   findById(id: string) {
