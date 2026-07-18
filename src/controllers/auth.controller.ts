@@ -17,6 +17,8 @@ const REFRESH_COOKIE_OPTIONS = {
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
+console.log("NODE_ENV:", env.NODE_ENV);
+console.log("isProd:", isProd);
 
 function deviceContext(req: Request) {
   return { userAgent: req.headers["user-agent"], ipAddress: req.ip };
