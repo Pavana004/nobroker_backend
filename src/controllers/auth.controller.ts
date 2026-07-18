@@ -13,10 +13,13 @@ import { success } from "../utils/apiResponse";
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isProd,
-  sameSite: "none" as const,
+  sameSite: isProd ? ("none" as const) : ("lax" as const),
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
+
+console.log("NODE_ENV:", env.NODE_ENV);
+console.log("isProd:", isProd);
 
 function deviceContext(req: Request) {
   return { userAgent: req.headers["user-agent"], ipAddress: req.ip };
