@@ -14,11 +14,6 @@ export const refreshTokenRepository = {
   findByHash(tokenHash: string) {
     return prisma.refreshToken.findUnique({ where: { tokenHash } });
   },
-
-  // Token rotation: mark the old token as revoked and record which token
-  // replaced it. If a revoked token is ever presented again, that's a
-  // strong signal of theft/replay — the caller can respond by revoking
-  // the entire token family (see auth.service.ts).
   revoke(id: string, replacedById?: string) {
     return prisma.refreshToken.update({
       where: { id },

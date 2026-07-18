@@ -1,7 +1,11 @@
 import { propertyRepository } from "../repositories/property.repository";
 import { AppError } from "../utils/AppError";
 import { encodeCursor } from "../utils/cursorPagination";
-import { CreatePropertyInput, SearchPropertiesQuery, UpdatePropertyInput } from "../validators/property.validator";
+import {
+  CreatePropertyInput,
+  SearchPropertiesQuery,
+  UpdatePropertyInput,
+} from "../validators/property.validator";
 
 export const propertyService = {
   async create(ownerId: string, input: CreatePropertyInput) {
@@ -26,9 +30,6 @@ export const propertyService = {
   async update(id: string, ownerId: string, input: UpdatePropertyInput) {
     const existing = await propertyRepository.findById(id);
     if (!existing) throw AppError.notFound("Property not found");
-
-    // Ownership check lives in the service layer, not the route — keeps
-    // authorization logic testable independent of Express.
     if (existing.ownerId !== ownerId) {
       throw AppError.forbidden("You can only update your own properties");
     }
@@ -62,8 +63,10 @@ export const propertyService = {
     const nextCursor =
       hasNextPage && last
         ? encodeCursor(
-            query.sortBy === "price" ? last.price.toString() : last.createdAt.toISOString(),
-            last.id
+            query.sortBy === "price"
+              ? last.price.toString()
+              : last.createdAt.toISOString(),
+            last.id,
           )
         : null;
 

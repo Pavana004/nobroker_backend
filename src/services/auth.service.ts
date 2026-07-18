@@ -80,12 +80,6 @@ export const authService = {
     const tokens = await issueTokenPair(user, ctx);
     return { user: userRepository.toPublicUser(user), ...tokens };
   },
-
-  // Refresh Token Rotation: every time a refresh token is used, it is
-  // immediately revoked and a brand-new refresh token is issued in its
-  // place. If someone ever presents an already-revoked token, that's proof
-  // a token was stolen and used twice — we respond by revoking the *entire*
-  // session family for that user, forcing re-login everywhere.
   async refresh(rawToken: string, ctx: DeviceContext) {
     let payload;
     try {
@@ -102,8 +96,6 @@ export const authService = {
     }
 
     if (stored.isRevoked) {
-      // Reuse of a rotated-out token — likely theft. Nuke every active
-      // session for this user as a precaution.
       await refreshTokenRepository.revokeAllForUser(stored.userId);
       throw AppError.unauthorized("Session invalidated. Please log in again.");
     }

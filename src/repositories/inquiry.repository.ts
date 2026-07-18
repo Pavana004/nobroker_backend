@@ -11,7 +11,9 @@ export const inquiryRepository = {
     return prisma.inquiry.create({
       data: { propertyId, senderId, message },
       include: {
-        property: { select: { id: true, title: true, city: true, ownerId: true } },
+        property: {
+          select: { id: true, title: true, city: true, ownerId: true },
+        },
       },
     });
   },
@@ -22,16 +24,18 @@ export const inquiryRepository = {
       orderBy: { createdAt: "desc" },
       include: {
         property: {
-          select: { id: true, title: true, city: true, price: true, images: { take: 1 } },
+          select: {
+            id: true,
+            title: true,
+            city: true,
+            price: true,
+            images: { take: 1 },
+          },
         },
       },
     });
   },
 
-  // Used for the cooldown check: how many inquiries has this user sent
-  // across ANY property in the last N minutes? Complements the per-property
-  // unique constraint (which stops duplicate messages to the *same* owner)
-  // by also stopping mass-messaging *many* owners in a short burst.
   countRecentByUser(senderId: string, sinceMinutesAgo: number) {
     const since = new Date(Date.now() - sinceMinutesAgo * 60 * 1000);
     return prisma.inquiry.count({

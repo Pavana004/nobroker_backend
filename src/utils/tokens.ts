@@ -8,7 +8,9 @@ export interface AccessTokenPayload {
 }
 
 export function signAccessToken(payload: AccessTokenPayload): string {
-  const options: SignOptions = { expiresIn: env.JWT_ACCESS_EXPIRY as SignOptions["expiresIn"] };
+  const options: SignOptions = {
+    expiresIn: env.JWT_ACCESS_EXPIRY as SignOptions["expiresIn"],
+  };
   return jwt.sign(payload, env.JWT_ACCESS_SECRET, options);
 }
 
@@ -24,7 +26,9 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
 //      even though the JWT itself hasn't expired yet)
 //   3. Rotation-reuse detection (see auth.service.ts)
 export function signRefreshToken(payload: AccessTokenPayload): string {
-  const options: SignOptions = { expiresIn: env.JWT_REFRESH_EXPIRY as SignOptions["expiresIn"] };
+  const options: SignOptions = {
+    expiresIn: env.JWT_REFRESH_EXPIRY as SignOptions["expiresIn"],
+  };
   return jwt.sign(payload, env.JWT_REFRESH_SECRET, options);
 }
 

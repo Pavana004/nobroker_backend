@@ -12,10 +12,6 @@ import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 import { generalLimiter } from "./middlewares/rateLimiters";
 
 const app = express();
-
-// --- Security headers -------------------------------------------------
-// Sets X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security,
-// a conservative Content-Security-Policy, and more, in one call.
 app.use(helmet());
 
 const allowedOrigins = [
@@ -23,17 +19,9 @@ const allowedOrigins = [
   "https://nobroker-frontend.vercel.app",
   "http://localhost:3000",
 ].filter(Boolean);
-
-// --- CORS ---------------------------------------------------------------
-// `credentials: true` is required because the refresh token travels as an
-// httpOnly cookie — the frontend origin must be explicitly whitelisted
-// (wildcard "*" is rejected by browsers whenever credentials are involved).
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests without an Origin header
-      // (Postman, curl, server-to-server requests)
       if (!origin) {
         return callback(null, true);
       }
@@ -49,23 +37,15 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-// --- Body parsing & compression -----------------------------------------
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compression());
 app.enable("trust proxy");
-
-// --- Logging --------------------------------------------------------------
 app.use(morgan(isProd ? "combined" : "dev"));
-
-// --- Rate limiting (general backstop; stricter limiters on specific routes) -
 app.use("/api", generalLimiter);
-
-// --- API docs -------------------------------------------------------------
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// --- Health check (for load balancers / uptime monitors / Docker healthcheck)
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });

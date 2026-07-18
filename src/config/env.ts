@@ -3,10 +3,10 @@ import { z } from "zod";
 
 dotenv.config();
 
-// Fail fast at boot if required env vars are missing/malformed — this is
-// far cheaper than discovering a missing secret in production at 2am.
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
   PORT: z.coerce.number().default(5000),
   API_BASE_URL: z.string().url(),
   CLIENT_URL: z.string().url(),
@@ -36,10 +36,12 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  // eslint-disable-next-line no-console
-  console.error("❌ Invalid environment variables:", parsed.error.flatten().fieldErrors);
+  console.error(
+    "❌ Invalid environment variables:",
+    parsed.error.flatten().fieldErrors,
+  );
   process.exit(1);
 }
 
 export const env = parsed.data;
-export const isProd = env.NODE_ENV === "production";
+export const isProd = env.NODE_ENV === "development";

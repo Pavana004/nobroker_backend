@@ -49,24 +49,19 @@ export const propertyRepository = {
     ]);
   },
 
-  // -------------------------------------------------------------------
-  // SEARCH with cursor (keyset) pagination.
-  //
-  // Why not OFFSET/LIMIT? OFFSET forces Postgres to scan and discard every
-  // row before the offset — page 500 at offset=5000 means scanning 5000
-  // rows just to throw them away, and that cost grows linearly with page
-  // depth. It also produces skipped/duplicated rows if data changes between
-  // page loads (a new listing pushes everything down by one).
-  //
-  // Keyset pagination instead says "give me rows strictly after the last
-  // one I saw" using an indexed WHERE clause — O(log n) via the B-tree
-  // index regardless of how deep you page, and stable under concurrent
-  // writes. The cost: no "jump to page 42" — only next/previous, which is
-  // exactly the UX real listing sites use anyway (infinite scroll / Next).
-  // -------------------------------------------------------------------
   async search(query: SearchPropertiesQuery) {
-    const { city, locality, minPrice, maxPrice, propertyType, bedrooms, sortBy, sortOrder, cursor, limit } =
-      query;
+    const {
+      city,
+      locality,
+      minPrice,
+      maxPrice,
+      propertyType,
+      bedrooms,
+      sortBy,
+      sortOrder,
+      cursor,
+      limit,
+    } = query;
 
     const where: Prisma.PropertyWhereInput = {
       status: "ACTIVE",
@@ -82,12 +77,13 @@ export const propertyRepository = {
       }),
     };
 
-    // Build the keyset predicate: "rows after the cursor" in the chosen
-    // sort direction, using (sortColumn, id) as a composite tiebreaker.
     if (cursor) {
       const { sortValue, id } = decodeCursor(cursor);
       const op = sortOrder === "desc" ? "lt" : "gt";
-      const sortColumn = sortBy === "price" ? new Prisma.Decimal(sortValue) : new Date(sortValue);
+      const sortColumn =
+        sortBy === "price"
+          ? new Prisma.Decimal(sortValue)
+          : new Date(sortValue);
 
       where.OR = [
         { [sortBy]: { [op]: sortColumn } },
@@ -97,8 +93,6 @@ export const propertyRepository = {
 
     const rows = await prisma.property.findMany({
       where,
-      // Fetch one extra row to know whether a next page exists, without a
-      // separate COUNT(*) query (which is itself expensive at scale).
       take: limit + 1,
       orderBy: [{ [sortBy]: sortOrder }, { id: sortOrder }],
       include: publicPropertyInclude,
@@ -110,18 +104,6 @@ export const propertyRepository = {
     return { page, hasNextPage };
   },
 
-  // -------------------------------------------------------------------
-  // SIMILAR PROPERTIES
-  //
-  // Strategy: same city + same property type are hard filters (a 2BHK
-  // apartment buyer in Bangalore doesn't want a villa in Pune). Budget and
-  // bedroom count are soft — we widen a tolerance band (±20% price, ±1
-  // bedroom) rather than exact-matching, since exact matches are rare and
-  // an empty result set is a worse UX than an approximate one.
-  //
-  // The query rides the composite index @@index([city, bedrooms, price])
-  // defined in schema.prisma, so this stays fast even at 10k+ rows.
-  // -------------------------------------------------------------------
   async findSimilar(property: {
     id: string;
     city: string;
@@ -138,7 +120,8 @@ export const propertyRepository = {
         id: { not: property.id },
         status: "ACTIVE",
         city: property.city,
-        propertyType: property.propertyType as Prisma.EnumPropertyTypeFilter["equals"],
+        propertyType:
+          property.propertyType as Prisma.EnumPropertyTypeFilter["equals"],
         bedrooms: { gte: property.bedrooms - 1, lte: property.bedrooms + 1 },
         price: { gte: minPrice, lte: maxPrice },
       },

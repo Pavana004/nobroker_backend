@@ -1,8 +1,3 @@
-// Distinguishing "operational" errors (bad input, not found, unauthorized —
-// expected, safe to show a clean message for) from programmer errors
-// (undefined is not a function) is the backbone of the global error handler.
-// Only AppError instances get their message shown to the client; anything
-// else is logged in full and a generic 500 is returned instead.
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly isOperational = true;

@@ -4,12 +4,6 @@ import { authService } from "../services/auth.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import { success } from "../utils/apiResponse";
 
-// httpOnly + Secure + SameSite=strict cookie for the refresh token.
-// httpOnly -> inaccessible to JS, immune to XSS token theft.
-// SameSite=strict -> not sent on cross-site requests, mitigates CSRF.
-// The access token, by contrast, is returned in the JSON body and kept in
-// memory (e.g. a Zustand store) on the frontend — never localStorage, which
-// is readable by any injected script. See docs/AUTH_STRATEGY.md.
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isProd,

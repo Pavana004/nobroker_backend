@@ -1,5 +1,3 @@
-// Every successful response follows the same envelope so frontend clients
-// never have to special-case a route's shape.
 export interface ApiSuccessResponse<T> {
   success: true;
   message: string;
@@ -16,7 +14,7 @@ export interface ApiErrorResponse {
 export function success<T>(
   message: string,
   data: T,
-  meta?: Record<string, unknown>
+  meta?: Record<string, unknown>,
 ): ApiSuccessResponse<T> {
   return { success: true, message, data, ...(meta ? { meta } : {}) };
 }

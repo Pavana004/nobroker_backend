@@ -1,8 +1,5 @@
-// Opaque cursor = base64("<createdAt-ISO>|<id>"). We pair the sort column
-// (createdAt) with the primary key (id) as a tiebreaker so pagination stays
-// stable even when multiple rows share the same createdAt millisecond.
 export interface Cursor {
-  sortValue: string; // ISO date string or numeric string, depending on sortBy
+  sortValue: string;
   id: string;
 }
 

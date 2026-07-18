@@ -52,10 +52,6 @@ export const updatePropertySchema = z.object({
 export const propertyIdParamSchema = z.object({
   params: z.object({ id: z.string().uuid("Invalid property id") }),
 });
-
-// Cursor pagination: `cursor` is an opaque, base64-encoded token produced by
-// the previous page's response — never a raw page number/offset. See
-// docs/PAGINATION.md for why.
 export const searchPropertiesSchema = z.object({
   query: z.object({
     city: z.string().trim().optional(),
