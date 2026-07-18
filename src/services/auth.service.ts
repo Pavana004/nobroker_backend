@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { env } from "../config/env";
+// import { env } from "../config/env";
 import { AppError } from "../utils/AppError";
 import { userRepository } from "../repositories/user.repository";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository";
@@ -44,7 +44,8 @@ export const authService = {
 
     const passwordHash = await bcrypt.hash(
       input.password,
-      env.BCRYPT_SALT_ROUNDS,
+      // env.BCRYPT_SALT_ROUNDS,
+      10
     );
 
     const user = await userRepository.create({
