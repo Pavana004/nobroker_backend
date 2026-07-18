@@ -22,10 +22,30 @@ app.use(helmet());
 // `credentials: true` is required because the refresh token travels as an
 // httpOnly cookie — the frontend origin must be explicitly whitelisted
 // (wildcard "*" is rejected by browsers whenever credentials are involved).
+
+const allowedOrigins = [
+  env.CLIENT_URL,
+  "https://nobroker-frontend.vercel.app",
+  "http://localhost:3000",
+].filter(Boolean);
 app.use(
   cors({
-    origin: [env.CLIENT_URL, "https://nobroker-backend-sttk.onrender.com/"],
+    origin: (origin, callback) => {
+      // Allow requests without an Origin header
+      // (Postman, curl, server-to-server requests)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked: ${origin}`));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 

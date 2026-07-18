@@ -1,5 +1,5 @@
-import crypto from "crypto";
-// import { env } from "../config/env";
+import bcrypt from "bcrypt";
+import { env } from "../config/env";
 import { AppError } from "../utils/AppError";
 import { userRepository } from "../repositories/user.repository";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository";
@@ -15,22 +15,6 @@ import { RegisterInput, LoginInput } from "../validators/auth.validator";
 interface DeviceContext {
   userAgent?: string;
   ipAddress?: string;
-}
-
-async function hashPassword(password: string) {
-  const salt = crypto.randomBytes(16).toString("hex");
-  const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-  return `$scrypt$${salt}$${derived}`;
-}
-
-async function verifyPassword(password: string, storedHash: string) {
-  if (!storedHash.startsWith("$scrypt$")) {
-    return false;
-  }
-
-  const [, salt, derived] = storedHash.split("$");
-  const candidate = crypto.scryptSync(password, salt, 64).toString("hex");
-  return candidate === derived;
 }
 
 async function issueTokenPair(
@@ -58,7 +42,10 @@ export const authService = {
       throw AppError.conflict("An account with this email already exists");
     }
 
-    const passwordHash = await hashPassword(input.password);
+    const passwordHash = await bcrypt.hash(
+      input.password,
+      env.BCRYPT_SALT_ROUNDS,
+    );
 
     const user = await userRepository.create({
       name: input.name,
@@ -80,7 +67,7 @@ export const authService = {
       throw AppError.unauthorized("Invalid email or password");
     }
 
-    const isValid = await verifyPassword(input.password, user.passwordHash);
+    const isValid = await bcrypt.compare(input.password, user.passwordHash);
     if (!isValid) {
       throw AppError.unauthorized("Invalid email or password");
     }
