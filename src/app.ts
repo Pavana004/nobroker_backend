@@ -24,7 +24,7 @@ app.use(helmet());
 // (wildcard "*" is rejected by browsers whenever credentials are involved).
 app.use(
   cors({
-    origin: [env.CLIENT_URL, "https://nobroker-frontend.vercel.app/"],
+    origin: [env.CLIENT_URL, "https://nobroker-frontend.vercel.app"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
